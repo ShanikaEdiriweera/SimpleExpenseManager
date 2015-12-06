@@ -12,7 +12,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.Constants;
 public class DBHandler extends SQLiteOpenHelper{
     private static DBHandler dbHandler = null;
 
-    private DBHandler(Context context) {
+    public DBHandler(Context context) {
         super(context, Constants.DATABASE_NAME, null, Constants.DATABASE_VERSION);
     }
 
@@ -20,11 +20,11 @@ public class DBHandler extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_ACCOUNT_TABLE = "CREATE TABLE " + Constants.TABLE_ACCOUNT + "( Account_No VARCHAR(10) PRIMARY KEY, Account_holder_name VARCHAR(50) NOT NULL," +
-                "Bank_name VARCHAR(30) NOT NULL, Balance double default 0 check(Balance>=0) )";
+                "Bank_name VARCHAR(30) NOT NULL, Balance double default 0 check(Balance>=0) );";
 
         String CREATE_TRANSACTION_TABLE = "CREATE TABLE " + Constants.TABLE_TRANSACTION + "( Date DATETIME default '0000-00-00 00:00:00'" +
                 "Account_No VARCHAR(10) NOT NULL, Expense_type VARCHAR(7) check(Expense_type in ('EXPENSE','INCOME')), Amount double default 0 check(balance>=0)," +
-                "primary key(Date, Account_No)), foreign key(Account_No) references "+Constants.TABLE_ACCOUNT+"(Account_No)";
+                "primary key(Date, Account_No)), foreign key(Account_No) references "+Constants.TABLE_ACCOUNT+"(Account_No);";
 
         db.execSQL(CREATE_ACCOUNT_TABLE);
         db.execSQL(CREATE_TRANSACTION_TABLE);
