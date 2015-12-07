@@ -30,5 +30,5 @@ public class Constants {
 
     // table names
     public static final String TABLE_ACCOUNT = "account";
-    public static final String TABLE_TRANSACTION = "transaction";
+    public static final String TABLE_TRANSACTION = "transactions";
 }

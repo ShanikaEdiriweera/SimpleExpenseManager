@@ -1,7 +1,9 @@
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,16 +25,25 @@ public class PersistentTransactionDAO implements TransactionDAO {
     public PersistentTransactionDAO(SQLiteDatabase db) {
         this.db = db;
     }
+
     @Override
     public void logTransaction(Date date, String accountNo, ExpenseType expenseType, double amount) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        db.execSQL("INSERT INTO "+ Constants.TABLE_TRANSACTION+" values("+formatter.format(date)+","+accountNo+","+expenseType+","+amount+");");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String dt = sdf.format(date);
+
+        ContentValues v = new ContentValues();
+        v.put("Date", dt);
+        v.put("Account_No", accountNo);
+        v.put("Expense_type", expenseType.toString());
+        v.put("Amount", amount);
+
+        db.insert(Constants.TABLE_TRANSACTION, null, v);
     }
 
     @Override
     public List<Transaction> getAllTransactionLogs() {
-        Cursor cursor = db.rawQuery("Select * from Transaction",null);
+        Cursor cursor = db.rawQuery("Select * from Transactions", null);
         List<Transaction> transactions = new ArrayList<Transaction>();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -40,7 +51,7 @@ public class PersistentTransactionDAO implements TransactionDAO {
             do {
                 try {
                     Date date = formatter.parse(cursor.getString(0));
-                    Transaction transaction = new Transaction(date,cursor.getString(1),((cursor.getString(2)=="INCOME")?ExpenseType.INCOME:ExpenseType.EXPENSE), Double.parseDouble(cursor.getString(3)));
+                    Transaction transaction = new Transaction(date, cursor.getString(1), ((cursor.getString(2) == "INCOME") ? ExpenseType.INCOME : ExpenseType.EXPENSE), Double.parseDouble(cursor.getString(3)));
                     // Adding contact to list
                     transactions.add(transaction);
                 } catch (ParseException e) {
@@ -53,20 +64,25 @@ public class PersistentTransactionDAO implements TransactionDAO {
 
     @Override
     public List<Transaction> getPaginatedTransactionLogs(int limit) {
-        Cursor cursor = db.rawQuery("Select * from Transaction ORDER BY Date LIMIT "+limit,null);
+        Cursor cursor = db.rawQuery("Select * from Transactions ORDER BY Date LIMIT " + limit, null);
         List<Transaction> transactions = new ArrayList<Transaction>();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         if (cursor.moveToFirst()) {
             do {
+
+                Date date = null;
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 try {
-                    Date date = formatter.parse(cursor.getString(0));
-                    Transaction transaction = new Transaction(date,cursor.getString(1),((cursor.getString(2)=="INCOME")?ExpenseType.INCOME:ExpenseType.EXPENSE), Double.parseDouble(cursor.getString(3)));
-                    // Adding contact to list
-                    transactions.add(transaction);
+                    date = simpleDateFormat.parse(cursor.getString(0));
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    // TODO Auto-generated catch block
+                    Log.e("Database Handler", "Error converting String to Date. " + e.toString());
                 }
+                Transaction transaction = new Transaction(date, cursor.getString(1), ((cursor.getString(2) == "INCOME") ? ExpenseType.INCOME : ExpenseType.EXPENSE), Double.parseDouble(cursor.getString(3)));
+                // Adding contact to list
+                transactions.add(transaction);
+
             } while (cursor.moveToNext());
         }
         return transactions;

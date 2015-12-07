@@ -1,5 +1,6 @@
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -77,8 +78,15 @@ public class PersistentAccountDAO implements AccountDAO {
 
     @Override
     public void addAccount(Account account) {
-        db.execSQL("INSERT INTO "+Constants.TABLE_ACCOUNT+" values("+account.getAccountNo()+","+account.getAccountHolderName()+","
-        +account.getBankName()+","+account.getBalance()+";");
+
+        ContentValues values = new ContentValues();
+        values.put("Account_No", account.getAccountNo());
+        values.put("Account_holder_name", account.getBankName());
+        values.put("Bank_name", account.getAccountHolderName());
+        values.put("Balance", account.getBalance());
+
+        db.insert(Constants.TABLE_ACCOUNT, null, values);
+
     }
 
     @Override
@@ -96,6 +104,9 @@ public class PersistentAccountDAO implements AccountDAO {
             NewBalance -= amount;
         }
 
-        db.execSQL("UPDATE Account set Balance='"+NewBalance+"' WHERE accountNo='"+accountNo+"';");
+        ContentValues v = new ContentValues();
+        v.put("Balance", NewBalance);
+
+        db.update(Constants.TABLE_ACCOUNT, v, "Account_No" + "='" + accountNo + "'", null);
     }
 }
